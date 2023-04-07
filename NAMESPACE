@@ -1,0 +1,4 @@
+export(reset, resetViaPCA, resetForSeurat, createVarSetCollection, randomSVD, randomColumnSpace)
+importFrom("Matrix", "t", "qr", "qr.Q")
+importFrom("methods", "slotNames")
+importFrom("stats", "rnorm", "runif", "rpois")

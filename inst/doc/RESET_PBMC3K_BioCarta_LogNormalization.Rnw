@@ -1,0 +1,6 @@
+%\VignetteIndexEntry{10x PBMC 3k log normalization MSigDB BioCarta collection example}
+\documentclass{article}
+\usepackage{pdfpages}
+\begin{document}
+\includepdf[pages=-, fitpaper=true]{./RESET_PBMC3K_BioCarta_LogNormalization_tmp.pdf}
+\end{document}
