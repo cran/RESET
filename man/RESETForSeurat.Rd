@@ -3,21 +3,22 @@
 \title{RESET wrapper for scRNA-seq data processed using the Seurat framework}
 \description{
 Executes the Reconstruction Set Test (RESET) method (\code{\link{reset}}) on 
-    normalized scRNA-seq data stored in a Seurat object.
+    normalized scRNA-seq data stored in a Seurat object. Will analyze the 
+    normalized counts in the active assay (i.e., either the log-normalized or SCTransformed counts).
 }
 \usage{
 resetForSeurat(seurat.data, num.pcs, gene.set.collection, k=10, random.threshold, 
-               k.buff=0, q=0, test.dist="normal", norm.type="2")
+               k.buff=0, q=0, test.dist="normal", norm.type="2", per.var=FALSE)
 }
 \arguments{
-\item{seurat.data}{The Seurat object that holds the scRNA-seq data. Assumes PCA have already been performed 
+\item{seurat.data}{The Seurat object that holds the scRNA-seq data. Assumes PCA has already been performed 
         on a centered and scaled version of the normalized counts.}
 \item{num.pcs}{Number of PCs to use in the RESET method. If not specified, will use all computed PCs. 
         The projection of the scRNA-seq data onto these PCs will be used as the \code{X.test} matrix for the \code{\link{reset}} call.}
 \item{gene.set.collection}{List of m gene sets for which scores are computed.
     Each element in the list corresponds to a gene set and the list element is a vector
     of indices for the genes in the set. The index value is defined relative to the
-    order of genes in the gene.exprs matrix. Gene set names should be specified as list names.
+    order of genes in the Seurat active assay. Gene set names should be specified as list names.
     See \code{\link{createVarSetCollection}} for utility function that can be used to help generate this list of indices.}
 \item{k}{See description in \code{\link{reset}}}    
 \item{random.threshold}{See description in \code{\link{reset}}}
@@ -25,6 +26,7 @@ resetForSeurat(seurat.data, num.pcs, gene.set.collection, k=10, random.threshold
 \item{q}{See description in \code{\link{reset}}}    
 \item{test.dist}{See description in \code{\link{reset}}}
 \item{norm.type}{See description in \code{\link{reset}}}
+\item{per.var}{See description in \code{\link{reset}}}
 }
 \value{
 An updated Seurat object with the following modifications:

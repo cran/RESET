@@ -30,7 +30,8 @@
 #   The vector of overall variable set scores in the feature metadata column "RESET"
 #
 resetForSeurat = function(seurat.data, num.pcs, gene.set.collection,
-    k=10, random.threshold, k.buff=0, q=0, test.dist="normal", norm.type="2") {
+    k=10, random.threshold, k.buff=0, q=0, test.dist="normal", norm.type="2",
+    per.var=FALSE) {
   
   if (!requireNamespace("Seurat", quietly=TRUE)) {
     stop("Seurat package not available!")
@@ -69,7 +70,7 @@ resetForSeurat = function(seurat.data, num.pcs, gene.set.collection,
     stop("Unsupported active assay: ", seurat.data@active.assay)
   }    
 
-  # Get the projection on the to PCs  
+  # Get the projection onto the to PCs  
   X.pca = seurat.data@reductions$pca@cell.embeddings
   if (!missing(num.pcs)) {
     if (num.pcs < ncol(X.pca)) {
@@ -92,7 +93,8 @@ resetForSeurat = function(seurat.data, num.pcs, gene.set.collection,
                       k=k, random.threshold=random.threshold, k.buff=k.buff, q=q,
                       var.sets=gene.set.collection,
                       test.dist=test.dist,
-                      norm.type=norm.type)
+                      norm.type=norm.type,
+                      per.var=per.var)
 
   # Create Assay object to store the sample level scores
   reset.assay = Seurat::CreateAssayObject(counts = t(reset.results$S))
@@ -103,3 +105,51 @@ resetForSeurat = function(seurat.data, num.pcs, gene.set.collection,
   return (seurat.data)
 }  
 
+#
+# Convert the overall and cell-level RESET scores to/from per-variable scores.
+#
+# Inputs:
+#
+#   seurat.data: Seurat object returned from resetForSeurat()
+#   var.sets: List containing variable set indices (this must be the same list used to call reset()).
+#   to.per.var: If true, converts to per-variable scores, i.e., divides scores by variable set size.
+#             If false, converts from per-variable scores, i.e., multiplies scores by variable set size.
+#
+# Returns a modified Seurat object
+#
+convertToPerVarScoresForSeurat = function(seurat.data, gene.set.collection, to.per.var=TRUE) {
+  if (missing(seurat.data)) {
+    stop("seurat.data must be specified!")
+  }
+  if (missing(gene.set.collection)) {
+    stop("gene.set.collection must be specified!")
+  }
+  
+  # Compute the size of each variable set
+  gene.set.size = unlist(lapply(gene.set.collection, length))
+  
+  # Scale the sizes by the mean size
+  # Thiw will prevent the scores from dramatically changing in magnitude.
+  gene.set.size = gene.set.size/mean(gene.set.size)
+  
+  # Extract the overall and cell-level scores
+  overall.scores = seurat.data@assays$RESET@meta.features$RESET
+  cell.scores = seurat.data@assays$RESET@data
+  if (to.per.var) {
+    overall.scores = overall.scores/gene.set.size  
+    # scale each column (which correspond to cells)
+    cell.scores = apply(cell.scores, 2, function(x) {
+      return (x/gene.set.size)        
+    })
+  } else {
+    overall.scores = overall.scores*gene.set.size  
+    cell.scores = apply(cell.scores, 2, function(x) {
+      return (x*gene.set.size)        
+    })
+  }
+  # Update the Seurat object
+  seurat.data@assays$RESET@meta.features$RESET = overall.scores
+  seurat.data@assays$RESET@data = cell.scores
+  
+  return (seurat.data)
+}

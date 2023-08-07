@@ -2,3 +2,13 @@ Changes in RESET v0.1.0
 ========================
 
 * Initial release to CRAN.
+
+Changes in RESET v0.1.1
+========================
+
+* Check for and remove zero variance columns before scaling data in reset() method.
+
+Changes in RESET v0.2
+========================
+
+* Add support for computing per-variable scores, i.e., divide overall and sample-level scores by the size of the variable set

@@ -7,7 +7,7 @@ This PC projection is computed using a randomized reduced rank SVD as implemente
 }
 \usage{
 resetViaPCA(X, center=TRUE, scale=FALSE, num.pcs=2, pca.buff=2, pca.q=1, var.sets, k=2, 
-      random.threshold, k.buff=0, q=0, test.dist="normal", norm.type="2")
+      random.threshold, k.buff=0, q=0, test.dist="normal", norm.type="2", per.var=FALSE)
 }
 \arguments{
 \item{X}{See description in \code{\link{reset}}}
@@ -31,6 +31,7 @@ resetViaPCA(X, center=TRUE, scale=FALSE, num.pcs=2, pca.buff=2, pca.q=1, var.set
 \item{q}{See description in \code{\link{reset}}}
 \item{test.dist}{See description in \code{\link{reset}}}
 \item{norm.type}{See description in \code{\link{reset}}}
+\item{per.var}{See description in \code{\link{reset}}}
 }
 \value{
 A list with the following elements:

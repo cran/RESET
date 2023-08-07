@@ -30,18 +30,16 @@
 # test.dist: Distribution for elements of random test matrix used in randomized algorithm. Must be one of "normal" or "uniform".
 # norm.type: The type of norm to use for computing reconstruction error. Defaults to "2" for Euclidean/Frobenius norm. Other supported option
 #    is "1" for L1 norm.
-# weight.type: If specified, then the generated sample-level scores are weighted by a statistic computed as a function of set values for each sample.
-#    Supported types include "mean" for mean of the set values, "mean.abs" for mean of the absolute set values, "stand.mean" for the
-#    standardized mean of the set values and "stand.mean.abs" for the standardized mean of the absolute set values.
-#    All of the supported weights will result in larger magnitude scores for samples with large values.
+# per.var: If true, the computed scores for each variable set are divided by the variable set size to generate "per variable" scores.
 #
 # Returns a list with two elements:
 # 
-# S: n-by-m matrix of sample-level variable set scores computed by RESET
+# S: n-by-m matrix of sample-level variable set scores computed by RESET (not returned if single.sample is false)
 # v: length m vector of the overall variable set scores computed by RESET
 #
-reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, scale.X.test=FALSE, var.sets, k=2, random.threshold, k.buff=0, q=0, test.dist="normal",
-                 norm.type="2") {
+reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, scale.X.test=FALSE,
+                 var.sets, k=2, random.threshold, k.buff=0, q=0, test.dist="normal", norm.type="2",
+                 per.var=FALSE) {
   
   if (missing(X)) {
     stop("Matrix X not specified!")
@@ -117,12 +115,17 @@ reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, sc
   
   message("Computing scores for collection of ", m, " sets")
   
+  var.set.sizes = unlist(lapply(var.sets, length))
+  mean.var.set.size = mean(var.set.sizes)
+  
   for (i in 1:m) {
-    if (i %% 50 == 0) {
-      message("Computing scores for set ", i)
-    }
     var.set = var.sets[[i]]
-    var.set.size = length(var.set)
+    var.set.name = names(var.sets)[i]
+    var.set.size = var.set.sizes[i]
+    
+    if (i %% 50 == 0) {
+      message("Computing scores for set ", i, " (", var.set.name, ") with size ", var.set.size)
+    }
     
     # Subset X for the variable set
     X.var.set = X[,var.set]
@@ -130,6 +133,15 @@ reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, sc
     # If X.test was specified and center.X is true, then
     # the subset needs to be centered
     if (!missing(X.test) && (center.X || scale.X)) {
+      if (scale.X) {
+        # Remove any zero variance columns
+        nonzero.var = which(apply(X.var.set, 2, function(x) {min(x) != max(x)}))
+        num.nonzero.var = length(nonzero.var)
+        if (num.nonzero.var != var.set.size) {
+          warning("Removing ", (var.set.size-num.nonzero.var), " columns with zero variance from set ", var.set.name)
+          X.var.set = X.var.set[,nonzero.var]
+        }
+      }
       X.var.set = scale(X.var.set, center=center.X, scale=scale.X)
     }
     
@@ -144,7 +156,7 @@ reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, sc
     #     var.set.weights = scale(var.set.weights, center=FALSE, scale=TRUE)        
     #   }
     # }
-
+    
     # Get rank k basis for column space of X.var.set
     if (var.set.size <= random.threshold) {
       # Variable set size is <= random.threshold,
@@ -154,6 +166,10 @@ reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, sc
       # Variable set size is > random.threshold, so use a randomized algorithm
       # implemented by randomColumnSpace to compute the rank k orthonormal basis
       Q = randomColumnSpace(X=X.var.set,k=(k+k.buff),q=q,test.dist=test.dist)
+    }
+    
+    if (ncol(Q) < k) {
+      warning("Q has less than k columns!")
     }
     
     # Use the first k columns of Q as the rank k basis
@@ -177,6 +193,12 @@ reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, sc
     # Compute overall score as the log2 fold-change of the L1 or Frobineus norm of the original test matrix relative to the relative to the equivalent norm 
     # of the error
     v[i] = log2(X.norm/norm(X.diff,type=m.norm))
+    
+    # If per-variable scores are desired, scale by var.set.size
+    if (per.var) {
+      S[,i] = S[,i]/(var.set.size/mean.var.set.size)
+      v[i] = v[i]/(var.set.size/mean.var.set.size)
+    }
   }
   
   S[which(is.nan(S))] = 0
@@ -195,7 +217,8 @@ reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, sc
 # Wrapper around the reset() function that uses the top PCs as X.test.
 #
 resetViaPCA = function(X, center=TRUE, scale=FALSE, num.pcs=2, pca.buff=2, pca.q=1, 
-                       var.sets, k=2, random.threshold, k.buff=0, q=0, test.dist="normal", norm.type="2") {
+                       var.sets, k=2, random.threshold, k.buff=0, q=0, test.dist="normal", norm.type="2",
+                       per.var=FALSE) {
   if (missing(X)) {
     stop("Matrix X not specified!")
   }
@@ -226,7 +249,7 @@ resetViaPCA = function(X, center=TRUE, scale=FALSE, num.pcs=2, pca.buff=2, pca.q
   reset.results = reset(X=X,X.test=X.pcs,center.X=!center,center.X.test=!center,
                         scale.X=FALSE,scale.X.test=FALSE, var.sets=var.sets,
                         k=k, random.threshold=random.threshold, k.buff=k.buff,
-                        q=q,test.dist=test.dist,norm.type=norm.type)
+                        q=q,test.dist=test.dist,norm.type=norm.type, per.var=per.var)
   return (reset.results)
 }
 
@@ -298,6 +321,48 @@ createVarSetCollection = function(var.names, var.sets, min.size=1, max.size) {
   }
   
   return (var.set.indices)
+}
+
+#
+# Convert the overall and sample-level RESET scores to/from per-variable scores.
+#
+# Inputs:
+#
+#   reset.out: Results from reset() or resetViaPCA()
+#   var.sets: List containing variable set indices (this must be the same list used to call reset()).
+#   to.per.var: If true, converts to per-variable scores, i.e., divides scores by variable set size.
+#             If false, converts from per-variable scores, i.e., multiplies scores by variable set size.
+#
+# Returns a modified RESET output list.
+#
+convertToPerVarScores = function(reset.out, var.sets, to.per.var=TRUE) {
+  if (missing(reset.out)) {
+    stop("reset.out must be specified!")
+  }
+  if (missing(var.sets)) {
+    stop("var.sets must be specified!")
+  }
+  
+  # Compute the size of each variable set
+  var.set.size = unlist(lapply(var.sets, length))
+  
+  # Scale the sizes by the mean size
+  # Thiw will prevent the scores from dramatically changing in magnitude.
+  var.set.size = var.set.size/mean(var.set.size)
+  
+  if (to.per.var) {
+    reset.out$v = reset.out$v/var.set.size  
+    reset.out$S = t(apply(reset.out$S, 1, function(x) {
+      return (x/var.set.size)       
+    }))
+  } else {
+    reset.out$v = reset.out$v * var.set.size  
+    reset.out$S = t(apply(reset.out$S, 1, function(x) {
+      return (x * var.set.size)        
+    }))
+  }
+  
+  return (reset.out)
 }
 
 #

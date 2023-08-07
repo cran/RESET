@@ -29,12 +29,14 @@ Implementation of the Reconstruction Set Test (RESET) method, which transforms a
                 is computed on each row and the entire error matrix.
           \item The overall score is the log2 ratio of the norm of the original \code{T} to the norm of the reconstruction error matrix.
           \item The score for each sample is the log2 ratio of the norm of the corresponding row of the original \code{T} to the norm of the same row of the reconstruction error matrix.
+          \item If \code{per.var=TRUE}, then the overall and sample-level scores are divided by the variable set size.
          }
       }
 }
 \usage{
 reset(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, scale.X.test=FALSE, 
-      var.sets, k=2, random.threshold, k.buff=0, q=0, test.dist="normal", norm.type="2")
+      var.sets, k=2, random.threshold, k.buff=0, q=0, test.dist="normal", norm.type="2",
+      per.var=FALSE)
 }
 \arguments{
 \item{X}{The n-by-p target matrix; columns represent variables and rows represent samples.}
@@ -81,6 +83,9 @@ reset(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, scale.X.test=
       of \code{\link{randomSVD}} method.}
 \item{norm.type}{The type of norm to use for computing reconstruction error. Defaults to "2" for Euclidean/Frobenius norm. Other supported option
       is "1" for L1 norm.}
+\item{per.var}{If true, the computed scores for each variable set are divided by the scaled variable set size to generate per-variable scores.
+      Variable set size scaling is performed by dividing all sizes by the mean size (this will generate per-variable scores of approximately the
+      same magnitude as the non-per-variable scores).}
 }
 \value{
 A list with the following elements:
