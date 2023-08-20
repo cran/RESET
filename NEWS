@@ -8,7 +8,12 @@ Changes in RESET v0.1.1
 
 * Check for and remove zero variance columns before scaling data in reset() method.
 
-Changes in RESET v0.2
+Changes in RESET v0.2.0
 ========================
 
 * Add support for computing per-variable scores, i.e., divide overall and sample-level scores by the size of the variable set
+
+Changes in RESET v0.2.1
+========================
+
+* Made version in DESCRIPTION consistent with version in package documentation file.

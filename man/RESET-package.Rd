@@ -11,7 +11,7 @@ Implementation of Reconstruction Set Test (RESET), a method for single sample va
 \tabular{ll}{
 Package: \tab RESET\cr
 Type: \tab Package\cr
-Version: \tab 0.1.1 \cr
+Version: \tab 0.2.1 \cr
 Date: \tab 2023\cr
 License: \tab GPL-2 \cr
 }

@@ -1,7 +1,7 @@
 Package: RESET
 Type: Package
 Title: Reconstruction Set Test
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: 
     person("H. Robert", "Frost", email="rob.frost@dartmouth.edu", role=c("aut", "cre"))
 Description: Contains logic for sample-level variable set scoring using randomized reduced rank reconstruction error. 
@@ -14,8 +14,8 @@ Suggests: Seurat (>= 4.0.0), SeuratObject (>= 4.0.0), sctransform (>=
 License: GPL (>= 2)
 Encoding: UTF-8
 NeedsCompilation: no
-Packaged: 2023-08-07 20:25:26 UTC; d37329b
+Packaged: 2023-08-20 14:38:21 UTC; d37329b
 Author: H. Robert Frost [aut, cre]
 Maintainer: H. Robert Frost <rob.frost@dartmouth.edu>
 Repository: CRAN
-Date/Publication: 2023-08-07 20:50:09 UTC
+Date/Publication: 2023-08-20 15:42:35 UTC
