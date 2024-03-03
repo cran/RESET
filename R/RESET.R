@@ -180,9 +180,18 @@ reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, sc
     # Compute reconstruction error
     X.diff = X.test - X.recon
     
+    # Compute norm of reconstruction error matrix
+    X.diff.norm = norm(X.diff,type=m.norm)
+    if (X.diff.norm == 0) {
+      warning("0 reconstruction error for set ", i, "! Overall score will be set to infinity.")
+    }
+    
     # Compute the row-level scores as log2 fold-change of the L1 or L2 norm of original row relative to the equivalent norm of the error. 
     # Larger values reflect improved reconstruction performance.
     X.diff.norms = apply(X.diff, 1, function(x){vectorNorm(x,norm.type)})
+    if (length(which(X.diff.norms == 0)) > 0) {
+      warning("0 reconstruction error for set ", i, "! Overall score will be set to infinity.")
+    }
     S[,i] = log2(X.row.norms/X.diff.norms)
     
     # if weight.type is specified, then multiple scores by the appropriate weights
@@ -192,7 +201,7 @@ reset = function(X, X.test, center.X=TRUE, scale.X=FALSE, center.X.test=TRUE, sc
     
     # Compute overall score as the log2 fold-change of the L1 or Frobineus norm of the original test matrix relative to the relative to the equivalent norm 
     # of the error
-    v[i] = log2(X.norm/norm(X.diff,type=m.norm))
+    v[i] = log2(X.norm/X.diff.norm)
     
     # If per-variable scores are desired, scale by var.set.size
     if (per.var) {

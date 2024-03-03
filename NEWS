@@ -17,3 +17,8 @@ Changes in RESET v0.2.1
 ========================
 
 * Made version in DESCRIPTION consistent with version in package documentation file.
+
+Changes in RESET v0.2.2
+========================
+
+* Output warning if reconstruction error is 0.
