@@ -22,3 +22,8 @@ Changes in RESET v0.2.2
 ========================
 
 * Output warning if reconstruction error is 0.
+
+Changes in RESET v1.0.0
+========================
+
+* Updated to support Seurat v5.0.0

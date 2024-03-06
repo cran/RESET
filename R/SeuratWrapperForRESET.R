@@ -57,14 +57,24 @@ resetForSeurat = function(seurat.data, num.pcs, gene.set.collection,
 
     # Use the normalized counts
     message("Using log-normalized RNA counts...")
-    normalized.counts = seurat.data@assays$RNA@data
+    if (is(seurat.data@assays$RNA, "Assay5")) {
+      normalized.counts = seurat.data@assays$RNA@layers$data
+      colnames(normalized.counts) = colnames(seurat.data)
+    } else {
+      normalized.counts = seurat.data@assays$RNA@data
+    }
     
   } else if (seurat.data@active.assay == "SCT") {
     
     # Use the corrected counts. The SCT correction process reverses the regression model
     # to generate counts that approximate what would be found if all cells were sequenced to the same depth.
     message("Using SCTransform normalized RNA counts...")
-    normalized.counts = seurat.data@assays$SCT@counts
+    if (is(seurat.data@assays$SCT,"Assay5")) {
+      normalized.counts = seurat.data@assays$SCT@layers$data 
+      colnames(normalized.counts) = colnames(seurat.data)
+    } else {
+      normalized.counts = seurat.data@assays$SCT@data    
+    }
         
   } else {    
     stop("Unsupported active assay: ", seurat.data@active.assay)

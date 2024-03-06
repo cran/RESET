@@ -1,5 +1,5 @@
 export(reset, resetViaPCA, resetForSeurat, createVarSetCollection, randomSVD, randomColumnSpace, 
        convertToPerVarScores, convertToPerVarScoresForSeurat)
 importFrom("Matrix", "t", "qr", "qr.Q")
-importFrom("methods", "slotNames")
+importFrom("methods", "slotNames", "is")
 importFrom("stats", "rnorm", "runif", "rpois")
